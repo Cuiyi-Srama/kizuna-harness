@@ -17,6 +17,7 @@ DOCS = {
     "memory-selector.md": ("[Harness] MemorySelector — 精选规则", "reference"),
     "anti-regression.md": ("[Harness] AntiRegression — 反退化闭环", "reference"),
     "cross-card-entry.md": ("[Harness] 跨卡入口模板", "reference"),
+    "memory-consistency.md": ("[规则] 记忆一致性维护规范 v1.0", "reference"),
 }
 
 VALID_PLATFORMS = ("operit", "claude-code", "generic")
@@ -53,7 +54,7 @@ def detect_platform():
 
 def main():
     platform = detect_platform()
-    print("Kizuna Harness Installer v1.1")
+    print("Kizuna Harness Installer v1.2")
     print("Detected platform:", platform)
     print()
 

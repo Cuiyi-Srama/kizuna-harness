@@ -11,9 +11,9 @@ description: >-
 license: MIT
 metadata:
   author: Cuiyi-Srama
-  version: 2.0.0
+  version: 2.1.0
   created: 2026-08-01
-  last_reviewed: 2026-08-01
+  last_reviewed: 2026-08-12
 ---
 
 # Kizuna Harness — AI 治理框架
@@ -184,6 +184,8 @@ Generator 和 Evaluator 在开始实现前协商"完成"的定义：
 ---
 
 ## 九、安装指引（面向安装者）
+
+> v2.1.0 (2026-08-12)：新增 references/memory-consistency.md（记忆一致性维护规范：单一事实源 / 引用去版本号 / 规则状态分离 / 过时标注 / 索引去计数化 / 三步走）。铁律引用已全部去版本号化。
 
 本技能是 **Harness 治理框架**的入口。完整安装需 4 步：
 
