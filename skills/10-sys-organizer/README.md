@@ -3,7 +3,7 @@
 > Operit 平台 JS Sandbox Package：四大维护领域一键巡检。
 > 作品集第 10 件，定位：**Harness 维护工具**（L1 记忆/文件的日常巡检与整理）。
 
-## 功能（5 工具）
+## 功能（6 工具）
 
 | 工具 | 功能 | 数据来源 |
 |---|---|---|
@@ -12,6 +12,7 @@
 | `organize_storage` | 空间整理：散落文件、扩展名→目录映射、临时文件、不动区域过滤 | find 命令 |
 | `verify_consistency` | 架构复检：链接悬挂/重复边、版本引用矛盾、包地图 checksum | query_memory_links + list_sandbox_packages |
 | `run_all` | 一键全量巡检：4 域汇总 + 统一执行编排表 | 以上全部 |
+| `sync_index` | 索引同步：自动生成/刷新文件位置索引（闭环：整理→索引→找回） | find/目录扫描 |
 
 ## 设计模式：分析器
 
@@ -42,6 +43,19 @@
 | `HARNESS_CHECKS` | 一致性检查项清单 | 默认已覆盖 Harness 核心检查 |
 
 文件索引路径提示（`/sdcard/文档/文件位置索引.md`）请改为你的索引文档位置，或删除对应检查项。
+
+## 维护闭环（整理 → 索引 → 找回）
+```
+sys_organizer（整理动作）→ 文件归位
+        ↓
+其他 AI 找不到文件 → SessionStart 钩子第 6 项
+        ↓
+读文件位置索引（sync_index 自动刷新）→ 定位 → 继续工作
+```
+- `organize_storage` / `run_all` 执行清单含索引同步步骤：整理完成后必须调用 `sync_index` 刷新索引
+- SessionStart 钩子第 6 项引用文件索引 → 本包负责索引的生成与维护
+- 遵循 `[规则]文件查找规范`：find 不到 ≠ 数据被清理
+- 输出报告遵循铁律规则2：破坏性操作必须用户确认
 
 ## 与 Kizuna 的配合
 
