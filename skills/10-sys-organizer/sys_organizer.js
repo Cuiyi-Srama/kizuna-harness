@@ -6,12 +6,12 @@
     "en": "System Organizer"
   },
   "description": {
-    "zh": "一键巡检四大维护领域：①整理对话（10类分组+重复合并）②记忆库整理归簇（孤立节点+版本冲突+归簇）③整理手机空间（散落文件+分类归位）④架构一致性复检（链接悬挂+版本矛盾+包地图）。工具为分析器：AI采集原始数据传入，包输出结构化报告+执行编排表，AI按表执行、用户对需确认项拍板。",
-    "en": "One-shot inspection for 4 maintenance domains: chat organization, memory consolidation, storage cleanup, architecture consistency. Analyzer-style tools: AI feeds raw data, package outputs structured report + execution checklist."
+    "zh": "一键巡检四大维护领域：①整理对话（10类分组+重复合并）②记忆库整理归簇（孤立节点+版本冲突+归簇）③整理手机空间（散落文件+分类归位）④架构一致性复检（链接悬挂+版本矛盾+包地图）+ ⑤索引同步（sync_index自动生成/刷新文件位置索引，闭环：整理→索引→找回）。工具为分析器：AI采集原始数据传入，包输出结构化报告+执行编排表，AI按表执行、用户对需确认项拍板。",
+    "en": "One-shot inspection for 4 maintenance domains: chat organization, memory consolidation, storage cleanup, architecture consistency + index sync (sync_index regenerates the file location index to close the organize->find loop). Analyzer-style tools: AI feeds raw data, package outputs structured report + execution checklist."
   },
   "author": ["Cuiyi"],
   "category": "Utility",
-  "version": "1.0.0",
+  "version": "1.1.0-open",
   "tools": [
     {
       "name": "organize_chats",
@@ -135,12 +135,39 @@
           "required": false
         }
       ]
+    },
+    {
+      "name": "sync_index",
+      "description": {
+        "zh": "索引同步（维护闭环最后一块）。输入dirs（目录树JSON，含dir/files/subdirs/note）+ 可选updates（本次归位变更from→to）+ 可选pending（待处理项）→ 输出完整版《文件位置索引.md》Markdown（固定模板+动态数据），AI直接覆盖写入 /sdcard/文档/文件位置索引.md。每次整理完成后必须调用本工具刷新索引，否则其他AI按旧索引找不到文件。不传dirs时输出采集指引。",
+        "en": "Index sync (closes the maintain loop). Input dirs JSON (directory tree) + optional updates (moved files) + optional pending -> outputs full file-location-index Markdown to overwrite /sdcard/文档/文件位置索引.md. MUST run after every storage cleanup so other AIs can find files."
+      },
+      "parameters": [
+        {
+          "name": "dirs",
+          "description": "目录树JSON字符串：[{\"dir\":\"文档\",\"files\":14,\"subdirs\":[\"学习资料\",\"教程说明书\"],\"note\":\"正式文档\"}]",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "updates",
+          "description": "本次归位变更JSON字符串（可选）：[{\"from\":\"/sdcard/x.zip\",\"to\":\"/sdcard/压缩包/x.zip\"}]",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "pending",
+          "description": "待处理项JSON字符串数组（可选）：[\"回收站/full.docx等用户决定删除\"]",
+          "type": "string",
+          "required": false
+        }
+      ]
     }
   ]
 }*/
 
 /**
- * sys_organizer v1.0.0-open — 系统整理器
+ * sys_organizer v1.0.0 — 系统整理器
  * 四大维护领域一键巡检：对话整理 / 记忆库归簇 / 手机空间 / 架构一致性
  * 设计：分析器模式 — AI采集原始数据传入，包内分析评分，输出结构化报告+执行编排表
  */
@@ -150,15 +177,14 @@ const sysOrganizer = (function () {
 
   // 对话10类分组体系 v2.0
   const CHAT_CATEGORIES = [
-    // ⚠️ 通用示例配置：按你的实际情况增删关键词（如游戏名/家人称呼/专属话题）
-    { id: "技术", keywords: ["app", "开发", "代码", "bug", "apk", "github", "脚本", "python", "编译", "调试", "数据库", "服务器", "docker", "api", "编程", "软件", "android", "shizuku", "adb"] },
-    { id: "游戏", keywords: ["游戏", "steam", "ps5", "switch", "外挂", "上分", "通关", "副本", "电竞"] },
+    { id: "技术", keywords: ["habit", "app", "开发", "代码", "bug", "apk", "gradle", "token", "github", "脚本", "python", "编译", "调试", "ui", "数据库", "服务器", "docker", "api", "编程", "软件", "android", "shizuku", "adb"] },
+    { id: "游戏", keywords: ["游戏", "王者", "原神", "鸣潮", "崩坏", "蛋仔", "steam", "ps5", "switch", "外挂", "上分", "通关", "副本", "重装上阵", "和平精英", "游戏摄影"] },
     { id: "学习", keywords: ["作业", "考试", "学习", "笔记", "复习", "英语", "数学", "语文", "老师", "成绩", "寒假", "暑假", "单词", "作文", "辩论", "期中", "期末"] },
-    { id: "小说", keywords: ["小说", "追更", "txt", "连载", "书单"] },
+    { id: "小说", keywords: ["小说", "追更", "txt", "连载", "书单", "怪谈"] },
     { id: "心理", keywords: ["孤独", "焦虑", "抑郁", "失眠", "情绪", "压力", "药物", "副作用", "倾诉", "心理", "心理咨询"] },
-    { id: "家庭", keywords: ["家人", "父母", "孩子", "家庭", "家务", "亲戚", "婚姻"] },
+    { id: "家庭", keywords: ["家人", "家庭", "家务", "零花钱", "家长", "积分", "教育"] },
     { id: "数码", keywords: ["手机", "耳机", "平板", "电脑", "硬件", "配置", "cpu", "显卡", "屏幕", "电池", "wifi", "路由", "串流", "手柄"] },
-    { id: "财经", keywords: ["股票", "基金", "关税", "比特币", "理财", "融资", "经济", "房价", "投资", "保险"] },
+    { id: "财经", keywords: ["股票", "基金", "关税", "股灾", "比特币", "理财", "融资", "经济", "房价", "电商促销", "赚钱"] },
     { id: "人文", keywords: ["诗词", "哲学", "历史", "科学", "社会", "文化", "电影", "音乐", "艺术", "读书"] }
   ];
   const CATEGORY_DEFAULT = "日常"; // 兜底类
@@ -189,7 +215,7 @@ const sysOrganizer = (function () {
     { exts: ["txt"], dir: "小说/或文档/", desc: "txt需读内容判定：小说→小说/，其他→文档/" }
   ];
   const TEMP_PATTERNS = [/^\./, /\.tmp$/i, /\.log$/i, /~$/, /\.part$/i, /\.crdownload$/i];
-  const NO_TOUCH_DIRS = ["Android", "DCIM", "Music", "Movies", "Recordings", "GAMES", "Download", "Documents", "Pictures", "backups", "cache", "com.*", "Operit"];  // ⚠️ 通用示例：按你的设备补充 App 专属目录（如网盘/音乐App等）
+  const NO_TOUCH_DIRS = ["Android", "DCIM", "Music", "Movies", "Recordings", "GAMES", "Download", "Documents", "Pictures", "backups", "cache", "com.*", "Operit"]; // 系统通用目录，按你的设备补充
 
   // Harness 一致性检查项
   const HARNESS_CHECKS = [
@@ -565,7 +591,8 @@ const sysOrganizer = (function () {
         "① critical项（临时文件）：列出清单经用户确认后删除",
         "② read_content项：先读文件内容再归类（[规则]文件必须读内容再归类）",
         "③ immediate项：按建议 mv 归位（注意跨分区mv是复制、目标目录已存在会嵌套）",
-        "④ 完成后更新分类体系记忆的整理日志"
+        "④ 完成后更新分类体系记忆的整理日志",
+        "⑤ 🔄 索引同步：调用 sync_index 传入新目录树+本次变更 → 覆盖刷新 /sdcard/文档/文件位置索引.md（闭环：整理→索引→找回，防其他AI迷路）"
       ]
     };
   }
@@ -735,9 +762,130 @@ const sysOrganizer = (function () {
         "① immediate项 → 按建议直接执行（无风险）",
         "② read_content项 → 先读文件/对话内容再判定（[规则]文件必须读内容再归类）",
         "③ need_user项 → 汇总清单，用户确认后执行",
-        "④ 全部完成后 → 更新相关记忆（整理日志/过时登记表）+ 输出验收报告"
+        "④ 存储域整理完成后 → 🔄 调用 sync_index 刷新 /sdcard/文档/文件位置索引.md（目录树+变更→覆盖写入）",
+        "⑤ 全部完成后 → 更新相关记忆（整理日志/过时登记表）+ 输出验收报告"
       ],
       note: "只读巡检，未执行任何修改。破坏性操作（删除/移动/合并）必须经用户确认（铁律规则2）。"
+    };
+  }
+
+  // ---------- 工具6：索引同步（维护闭环最后一块） ----------
+  async function sync_index(params) {
+    const p = params || {};
+    const dirs = safeParse(p.dirs, null);
+    const updates = safeParse(p.updates, []);
+    const pending = safeParse(p.pending, []);
+
+    if (!dirs || !Array.isArray(dirs)) {
+      return {
+        success: true,
+        mode: "guide",
+        spec_version: SPEC_VERSION,
+        generated_at: now(),
+        message: "未提供目录数据，先采集再生成索引：",
+        guide: [
+          "1. 分类目录总览：for d in <你的分类目录列表>; do echo \"$d: $(ls /sdcard/$d 2>/dev/null | wc -l) 项\"; done",
+          "2. 重点目录子目录：ls /sdcard/文档/ /sdcard/Pictures/（自建相册）/sdcard/Movies/视频收藏/",
+          "3. 构造 dirs JSON：[{\"dir\":\"文档\",\"files\":14,\"subdirs\":[\"学习资料\",\"教程说明书\"],\"note\":\"正式文档\"}]",
+          "4. updates（本次归位变更，可选）：[{\"from\":\"/sdcard/x.zip\",\"to\":\"/sdcard/压缩包/x.zip\"}]",
+          "5. pending（待处理项，可选）：[\"回收站/full.docx等用户决定删除\"]",
+          "6. 传回本工具：{\"dirs\":\"...\",\"updates\":\"...\",\"pending\":\"...\"} → 输出完整索引Markdown，直接覆盖写入 /sdcard/文档/文件位置索引.md"
+        ]
+      };
+    }
+
+    // ---- 固定模板（索引文档稳定骨架，本地版按实际环境维护） ----
+    const INDEX_HEADER = `# 📁 手机文件位置索引
+
+> 更新：${now()} | 用途：**任何 AI 找不到文件时，先读本文件定位，再下结论**
+> 文件可能已被分类归位——find 不到 ≠ 数据被清理！
+
+---
+
+## ⚡ 快速查找指南（找不到文件时的排查顺序）
+
+\`\`\`
+1. 读本索引 → 判断文件类型 → 去对应目录找
+2. 全盘搜索：find /sdcard -name "*关键词*"（排除 App 目录：Android/DCIM/Download 等）
+3. 查回收站：/sdcard/回收站/
+4. 查待确认：/sdcard/待确认/
+5. 仍找不到 → 才可以说"可能被清理"，并询问用户是否确认过删除
+\`\`\`
+
+---
+
+## 📂 分类目录总览（AI 整理的归位目标）
+
+| 目录 | 内容 | 典型子目录/文件 |
+|---|---|---|
+`;
+
+    const INDEX_FOOTER = `---
+
+## 🔒 不动区域（App/系统目录，勿动）
+
+Android/、DCIM/、Download/、Documents/、Music/、Recordings/、GAMES/、Pictures/、backups/、cache/、com.*/、Operit/（系统目录，按你的设备补充）
+
+---
+
+## ⚠️ 特别提醒（给其他 AI）
+
+1. **文件被移动归位是常态**：根目录/Download 根散落文件会被收进分类目录，find 时先按类型猜位置
+2. **隐私文件**：按用户偏好存放于隐私目录，勿外泄
+3. **AI 生成的脚本**在 \`工具脚本/\`，临时文件在 \`/data/local/tmp/\`（用完即删）
+4. 本索引由 sys_organizer 维护体系生成（sync_index 自动刷新），分类规则见记忆库 \`[用户]偏好—手机文件分类体系规范\``;
+
+    // ---- 动态部分 ----
+    const rows = dirs.map(d => {
+      const sub = (d.subdirs && d.subdirs.length) ? d.subdirs.join("、") : "—";
+      const fileInfo = d.files !== undefined ? `（${d.files} 文件${d.subdirs && d.subdirs.length ? " + " + d.subdirs.length + " 子目录" : ""}）` : "";
+      return `| \`${d.dir}/\` | ${d.note || ""}${fileInfo} | ${sub} |`;
+    }).join("\n");
+
+    let changesBlock = "（无变更）";
+    if (updates && updates.length) {
+      changesBlock = updates.map(u => `- \`${u.from}\` → \`${u.to}\``).join("\n");
+    }
+
+    let pendingBlock = "（无）";
+    if (pending && pending.length) {
+      pendingBlock = pending.map(x => `- ${x}`).join("\n");
+    }
+
+    const markdown = `${INDEX_HEADER}
+${rows}
+
+---
+
+## 🔄 本次整理变更记录（sys_organizer 自动同步）
+
+${changesBlock}
+
+---
+
+## 📌 当前待处理
+
+${pendingBlock}
+
+${INDEX_FOOTER}`;
+
+    return {
+      success: true,
+      mode: "report",
+      spec_version: SPEC_VERSION,
+      generated_at: now(),
+      summary: {
+        dirs: dirs.length,
+        changes: updates ? updates.length : 0,
+        pending: pending ? pending.length : 0
+      },
+      target_path: "/sdcard/文档/文件位置索引.md",
+      index_markdown: markdown,
+      checklist: [
+        "① 用 create_file 将 index_markdown 全文覆盖写入 /sdcard/文档/文件位置索引.md",
+        "② 验证：read_file 确认写入成功、格式完整（表格/分区齐全）",
+        "③ 目录结构有重大变化时同步更新记忆库 [规则]文件查找规范 的类型→位置映射"
+      ]
     };
   }
 
@@ -746,7 +894,8 @@ const sysOrganizer = (function () {
     consolidate_memory,
     organize_storage,
     verify_consistency,
-    run_all
+    run_all,
+    sync_index
   };
 })();
 
@@ -756,3 +905,4 @@ exports.consolidate_memory = sysOrganizer.consolidate_memory;
 exports.organize_storage = sysOrganizer.organize_storage;
 exports.verify_consistency = sysOrganizer.verify_consistency;
 exports.run_all = sysOrganizer.run_all;
+exports.sync_index = sysOrganizer.sync_index;
