@@ -11,7 +11,7 @@
   },
   "author": ["Cuiyi"],
   "category": "Utility",
-  "version": "1.1.0-open",
+  "version": "1.1.2-open",
   "tools": [
     {
       "name": "organize_chats",
@@ -180,11 +180,11 @@ const sysOrganizer = (function () {
     { id: "技术", keywords: ["habit", "app", "开发", "代码", "bug", "apk", "gradle", "token", "github", "脚本", "python", "编译", "调试", "ui", "数据库", "服务器", "docker", "api", "编程", "软件", "android", "shizuku", "adb"] },
     { id: "游戏", keywords: ["游戏", "王者", "原神", "鸣潮", "崩坏", "蛋仔", "steam", "ps5", "switch", "外挂", "上分", "通关", "副本", "重装上阵", "和平精英", "游戏摄影"] },
     { id: "学习", keywords: ["作业", "考试", "学习", "笔记", "复习", "英语", "数学", "语文", "老师", "成绩", "寒假", "暑假", "单词", "作文", "辩论", "期中", "期末"] },
-    { id: "小说", keywords: ["小说", "追更", "txt", "连载", "书单", "怪谈"] },
-    { id: "心理", keywords: ["孤独", "焦虑", "抑郁", "失眠", "情绪", "压力", "药物", "副作用", "倾诉", "心理", "心理咨询"] },
-    { id: "家庭", keywords: ["家人", "家庭", "家务", "零花钱", "家长", "积分", "教育"] },
+    { id: "小说", keywords: ["小说", "追更", "txt", "连载", "书单", "跌落暮色", "怪谈"] },
+    { id: "心理", keywords: ["孤独", "焦虑", "抑郁", "失眠", "情绪", "压力", "药物", "副作用", "倾诉", "心理", "舍曲林", "心理咨询"] },
+    { id: "家庭", keywords: ["妈妈", "爸爸", "妹妹", "家庭", "积分", "零花钱", "家长", "传销", "弟弟", "家务", "积分经济"] },
     { id: "数码", keywords: ["手机", "耳机", "平板", "电脑", "硬件", "配置", "cpu", "显卡", "屏幕", "电池", "wifi", "路由", "串流", "手柄"] },
-    { id: "财经", keywords: ["股票", "基金", "关税", "股灾", "比特币", "理财", "融资", "经济", "房价", "电商促销", "赚钱"] },
+    { id: "财经", keywords: ["股票", "基金", "关税", "股灾", "比特币", "理财", "融资", "经济", "房价", "拼多多传销", "赚钱"] },
     { id: "人文", keywords: ["诗词", "哲学", "历史", "科学", "社会", "文化", "电影", "音乐", "艺术", "读书"] }
   ];
   const CATEGORY_DEFAULT = "日常"; // 兜底类
@@ -215,7 +215,7 @@ const sysOrganizer = (function () {
     { exts: ["txt"], dir: "小说/或文档/", desc: "txt需读内容判定：小说→小说/，其他→文档/" }
   ];
   const TEMP_PATTERNS = [/^\./, /\.tmp$/i, /\.log$/i, /~$/, /\.part$/i, /\.crdownload$/i];
-  const NO_TOUCH_DIRS = ["Android", "DCIM", "Music", "Movies", "Recordings", "GAMES", "Download", "Documents", "Pictures", "backups", "cache", "com.*", "Operit"]; // 系统通用目录，按你的设备补充
+  const NO_TOUCH_DIRS = ["Android", "DCIM", "Music", "Movies", "Recordings", "GAMES", "Download", "Documents", "123云盘", "Tencent", "UCDownloads", "baidu", "cache", "工具大师", "制作铃声", "阅图锁屏", "i Music", "音乐", "音乐搜索", "下载", "backups", "丝竹居", "mit", "Operit", "待确认", "回收站", "备份数据", "文档", "小说", "安装包", "压缩包", "项目工程", "游戏", "逆向工程", "工具脚本", "角色卡", "Models", "Pictures"];
 
   // Harness 一致性检查项
   const HARNESS_CHECKS = [
@@ -784,8 +784,9 @@ const sysOrganizer = (function () {
         generated_at: now(),
         message: "未提供目录数据，先采集再生成索引：",
         guide: [
-          "1. 分类目录总览：for d in <你的分类目录列表>; do echo \"$d: $(ls /sdcard/$d 2>/dev/null | wc -l) 项\"; done",
+          "1. 分类目录总览：for d in 文档 小说 安装包 压缩包 项目工程 游戏 逆向工程 备份数据 工具脚本 角色卡 Models 待确认 回收站 Pictures Movies; do echo \"$d: $(ls /sdcard/$d 2>/dev/null | wc -l) 项\"; done",
           "2. 重点目录子目录：ls /sdcard/文档/ /sdcard/Pictures/（自建相册）/sdcard/Movies/视频收藏/",
+          "2.5 🔴 全局大文件扫描（防漏索引）：find /sdcard -maxdepth 5 -type f -size +100M -not -path '*/Android/data/*' 2>/dev/null —— 按大小过滤（不枚举扩展名，任何大文件都覆盖），含 /sdcard/下载/（下载工具目录）、根目录等所有位置；大文件条目 files=全部大文件数，note 列出文件名",
           "3. 构造 dirs JSON：[{\"dir\":\"文档\",\"files\":14,\"subdirs\":[\"学习资料\",\"教程说明书\"],\"note\":\"正式文档\"}]",
           "4. updates（本次归位变更，可选）：[{\"from\":\"/sdcard/x.zip\",\"to\":\"/sdcard/压缩包/x.zip\"}]",
           "5. pending（待处理项，可选）：[\"回收站/full.docx等用户决定删除\"]",
@@ -824,16 +825,18 @@ const sysOrganizer = (function () {
 
 ## 🔒 不动区域（App/系统目录，勿动）
 
-Android/、DCIM/、Download/、Documents/、Music/、Recordings/、GAMES/、Pictures/、backups/、cache/、com.*/、Operit/（系统目录，按你的设备补充）
+Android/、DCIM/、Download/、Documents/、Music/、Recordings/、GAMES/、123云盘/、Tencent/、UCDownloads/、baidu/、cache/、com.*/、vivo*/、工具大师/、制作铃声/、阅图锁屏/、i Music/、音乐/、音乐搜索/、下载/、backups/、丝竹居/、mit/、Operit/
 
 ---
 
 ## ⚠️ 特别提醒（给其他 AI）
 
 1. **文件被移动归位是常态**：根目录/Download 根散落文件会被收进分类目录，find 时先按类型猜位置
-2. **隐私文件**：按用户偏好存放于隐私目录，勿外泄
+2. **隐私文件**：按用户偏好存放（本地版：备份数据/个人记录/），勿外泄
 3. **AI 生成的脚本**在 \`工具脚本/\`，临时文件在 \`/data/local/tmp/\`（用完即删）
-4. 本索引由 sys_organizer 维护体系生成（sync_index 自动刷新），分类规则见记忆库 \`[用户]偏好—手机文件分类体系规范\``;
+4. 本索引由 sys_organizer 维护体系生成（sync_index 自动刷新），分类规则见记忆库 \`[用户]偏好—手机文件分类体系规范\`
+5. **大文件规则**：>100MB 大文件（模型 .gguf/.safetensors、大安装包、大压缩包等任何类型）只记录索引、不自动移动（除非用户要求）；大文件统一放 \`Models/\` 或用户指定目录
+6. **下载工具目录**（\`/sdcard/下载/\`）：App 自动分类目录，不移动其内部文件，但内容必须纳入索引（扫描时别漏）`;
 
     // ---- 动态部分 ----
     const rows = dirs.map(d => {
