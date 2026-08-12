@@ -75,6 +75,7 @@
 | 07 | self-evolution-action-framework | 自进化行动框架（S1-S5策略） |
 | 08 | enforcement-engine | 强制规则引擎（含RULES_REGISTRY，全局强制） |
 | 09 | chat-grouping | 对话分组整理（v2.0：10大类+重复合并） |
+| 10 | sys-organizer | 系统整理器（四大领域一键巡检，分析器模式） |
 
 ## 许可证
 
