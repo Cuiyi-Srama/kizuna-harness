@@ -7,7 +7,7 @@
 ```markdown
 [Harness] 系统钩子（常驻）
 ━━━━━━━━━━━━━━━━━━━━━━━━━━
-1. 铁律：query_memory("[铁律] 强制执行清单 v4.0")
+1. 铁律：query_memory("[铁律] 强制执行清单")（引用不带版本号）
 2. 架构：query_memory("[Harness] Kizuna — 架构总览")
 3. 执行：按 [Harness] HooksRegistry — 10事件注册表 逐项检查
 ```
@@ -18,13 +18,11 @@
 ## SessionStart Hook — 自动触发
 
 每次新会话首次回复前，必须执行:
-1. **铁律查询**: query_memory("[铁律]强制执行清单")（标题固定不带版本号，引用无需带版本）
+1. **铁律查询**: query_memory("[铁律] 强制执行清单")（引用不带版本号）
 2. **精选Agent**: 查询所有记忆(仅标题) → 精选≤5条 → 注入上下文
 3. **项目激活**: 如有 active_project → 查询项目最新快照
 4. **用户偏好**: query_memory("[用户] 偏好") → 注入
 5. **Harness状态**: 确认 [Harness] Kizuna 架构条目可访问
-6. **文件索引**: 文件查询类需求 → 先读 /sdcard/文档/文件位置索引.md（find不到≠被清理，详细排查见[规则]文件查找规范）
-7. 🔴 编译/构建类任务 → **强制 smart_build**（用户明确要求）：先查 projects.json 是否已配置该项目 → 未配置先接入（GitHub API 查 workflow+artifact → 补配置 → 更新编译时长基准）→ 后台启动 smart_build.py <项目> → 读 status/<项目>.json（禁止固定sleep、禁止裸跑GitHub API）→ 完成通知
 → 详见: [Harness] HooksRegistry — 10事件注册表
 ```
 
@@ -52,8 +50,7 @@
 3. **Token简报**: 估算剩余上下文，>60%时提醒
 4. **挫败检测**: 检查用户上一条消息是否含挫败信号 → 调整语气
 5. **Harness健康**: 当前Hook是否正常触发？记忆是否可达？
-6. **🔴 任务完整性核查**: 本会话用户提出的任务/纠正/安排是否已落库（全局待办或 [反馈]/[用户]偏好记忆）？未落库先补录再回复——防上下文压缩遗忘
 ```
 
 ---
-v1.6 | SessionStart编译强制smart_build + Stop任务完整性核查
+v1.0 | 社区版
