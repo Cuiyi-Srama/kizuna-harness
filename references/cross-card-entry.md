@@ -7,7 +7,7 @@
 ```markdown
 [Harness] 系统钩子（常驻）
 ━━━━━━━━━━━━━━━━━━━━━━━━━━
-1. 铁律：query_memory("[铁律] 强制执行清单 v4.0")
+1. 铁律：query_memory("[铁律] 强制执行清单")（引用不带版本号）
 2. 架构：query_memory("[Harness] Kizuna — 架构总览")
 3. 执行：按 [Harness] HooksRegistry — 10事件注册表 逐项检查
 ```
