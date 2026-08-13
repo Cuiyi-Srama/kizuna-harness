@@ -25,7 +25,7 @@
 ### 第 2 步：一键安装（对 AI 说一句话）
 对 AI 说 **"安装 Kizuna"**，AI 按 `INSTALL.md` 协议自动完成：
 - 运行 `install.py` → 自动检测平台 + 校验完整性 + 生成导入清单
-- 读取 `install_manifest.json` → 自动导入 8 条记忆（[铁律]/[Harness] 前缀）
+- 读取 `install_manifest.json` → 自动导入记忆（[铁律]/[Harness]/[规则] 前缀，当前 9 条）
 - 展示世界书条目 → 你只需粘贴到角色卡（激活方式：常驻）
 - **配置摘要额外提示词**（Operit）→ `install.py --print-summary-prompt` 输出，粘贴到平台配置（PreCompact 确定性实现）
 - 执行验证清单 → 报告安装结果
@@ -48,15 +48,16 @@
 ├── SKILL.md              — 主入口（架构 + 使用指引）
 ├── README.md             — 本文件（安装手册）
 ├── LICENSE               — MIT
-├── references/           — 记忆导入文档集（8 个组件）
+├── references/           — 记忆导入文档集（9 个组件）
 │   ├── ironlaw-v5.md     — 铁律 v5.0（社区版，已泛化个人约束）
 │   ├── kizuna-overview.md
-│   ├── hooks-registry.md
+│   ├── hooks-registry.md — v1.8（PreCompact 确定性 + 三级分层）
 │   ├── memory-taxonomy.md
 │   ├── memory-selector.md
 │   ├── anti-regression.md
 │   ├── cross-card-entry.md
-│   └── summary-prompt.md — 对话摘要额外提示词（PreCompact L1 确定性实现）
+│   ├── summary-prompt.md — 对话摘要额外提示词（PreCompact L1 确定性实现）
+│   └── memory-consistency.md — 记忆一致性维护规范（单一事实源/去版本号）
 └── worldbook/
     └── harness-hooks.md  — 世界书条目（4 条，可直接粘贴）
 ```
@@ -76,6 +77,7 @@
 | 07 | self-evolution-action-framework | 自进化行动框架（S1-S5策略） |
 | 08 | enforcement-engine | 强制规则引擎（含RULES_REGISTRY，全局强制） |
 | 09 | chat-grouping | 对话分组整理 |
+| 10 | sys-organizer | 系统巡检（对话/记忆/存储/架构一致性 + 索引同步） |
 
 ## 许可证
 
