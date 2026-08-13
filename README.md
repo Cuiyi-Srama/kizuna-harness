@@ -14,7 +14,7 @@
 - **经验纠错三路径** — 被动触发 / 版本变更自检 / 工具缺陷触发，统一修正标记
 - **确定性路由表** — 按问题特征路由到最相关记忆源，检索前先缩小范围
 - **跨卡入口模板** — 世界书标准条目，新角色卡 10 秒接入
-- **铁律强制执行清单** — 6 条核心原则 + 用户约束包（通用版，引用去版本号）
+- **铁律强制执行清单** — 6 条核心规则 + 用户约束包（原则级，防通胀；操作细节下沉至 [规则] 层）
 
 ## 安装（一键 + 一步粘贴，约 3 分钟）
 
@@ -25,8 +25,9 @@
 ### 第 2 步：一键安装（对 AI 说一句话）
 对 AI 说 **"安装 Kizuna"**，AI 按 `INSTALL.md` 协议自动完成：
 - 运行 `install.py` → 自动检测平台 + 校验完整性 + 生成导入清单
-- 读取 `install_manifest.json` → 自动导入 8 条记忆（[铁律]/[Harness]/[规则] 前缀）
+- 读取 `install_manifest.json` → 自动导入 8 条记忆（[铁律]/[Harness] 前缀）
 - 展示世界书条目 → 你只需粘贴到角色卡（激活方式：常驻）
+- **配置摘要额外提示词**（Operit）→ `install.py --print-summary-prompt` 输出，粘贴到平台配置（PreCompact 确定性实现）
 - 执行验证清单 → 报告安装结果
 
 ### 第 3 步：平台适配（自动）
@@ -49,15 +50,15 @@
 ├── LICENSE               — MIT
 ├── references/           — 记忆导入文档集（8 个组件）
 │   ├── ironlaw-v5.md     — 铁律 v5.0（社区版，已泛化个人约束）
-│   ├── memory-consistency.md — 记忆一致性维护规范 v1.0（新增）
 │   ├── kizuna-overview.md
 │   ├── hooks-registry.md
 │   ├── memory-taxonomy.md
 │   ├── memory-selector.md
 │   ├── anti-regression.md
-│   └── cross-card-entry.md
+│   ├── cross-card-entry.md
+│   └── summary-prompt.md — 对话摘要额外提示词（PreCompact L1 确定性实现）
 └── worldbook/
-    └── harness-hooks.md  — 世界书条目（5 条，可直接粘贴）
+    └── harness-hooks.md  — 世界书条目（4 条，可直接粘贴）
 ```
 
 ## 作品集（本仓库 skills/ 目录）
@@ -74,8 +75,7 @@
 | 06 | task-orchestration-system | 任务规划与执行系统 |
 | 07 | self-evolution-action-framework | 自进化行动框架（S1-S5策略） |
 | 08 | enforcement-engine | 强制规则引擎（含RULES_REGISTRY，全局强制） |
-| 09 | chat-grouping | 对话分组整理（v2.0：10大类+重复合并） |
-| 10 | sys-organizer | 系统整理器（四大领域一键巡检，分析器模式） |
+| 09 | chat-grouping | 对话分组整理 |
 
 ## 许可证
 
