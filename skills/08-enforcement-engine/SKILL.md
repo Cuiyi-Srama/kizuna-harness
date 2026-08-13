@@ -5,9 +5,9 @@ description: >-
 license: MIT
 metadata:
   author: Self-Evolution-Engine
-  version: 1.1.0
+  version: 1.2.0
   created: 2026-07-22
-  last_reviewed: 2026-08-01
+  last_reviewed: 2026-08-13
   review_interval_days: 60
   enforcement: global
   priority: mandatory
