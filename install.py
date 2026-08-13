@@ -17,8 +17,10 @@ DOCS = {
     "memory-selector.md": ("[Harness] MemorySelector — 精选规则", "reference"),
     "anti-regression.md": ("[Harness] AntiRegression — 反退化闭环", "reference"),
     "cross-card-entry.md": ("[Harness] 跨卡入口模板", "reference"),
-    "memory-consistency.md": ("[规则] 记忆一致性维护规范 v1.0", "reference"),
+    "summary-prompt.md": ("[Harness] SummaryPrompt — 摘要提示词组件", "reference"),
 }
+
+SUMMARY_PROMPT_FILE = os.path.join(REFERENCES, "summary-prompt.md")
 
 VALID_PLATFORMS = ("operit", "claude-code", "generic")
 
@@ -53,6 +55,18 @@ def detect_platform():
     return "generic"
 
 def main():
+    # 0. --print-summary-prompt: 输出摘要提示词全文（复制即用），不跑主流程
+    if "--print-summary-prompt" in sys.argv:
+        if os.path.exists(SUMMARY_PROMPT_FILE):
+            with open(SUMMARY_PROMPT_FILE, encoding="utf-8") as f:
+                content = f.read()
+            # 提取 ```markdown 代码块（提示词全文）
+            m = re.search(r"```markdown\n(.*?)\n```", content, re.S)
+            print(m.group(1) if m else content)
+        else:
+            print("[FAIL] summary-prompt.md not found")
+        return
+
     platform = detect_platform()
     print("Kizuna Harness Installer v1.2")
     print("Detected platform:", platform)
