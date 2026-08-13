@@ -18,6 +18,7 @@ DOCS = {
     "anti-regression.md": ("[Harness] AntiRegression — 反退化闭环", "reference"),
     "cross-card-entry.md": ("[Harness] 跨卡入口模板", "reference"),
     "summary-prompt.md": ("[Harness] SummaryPrompt — 摘要提示词组件", "reference"),
+    "memory-consistency.md": ("[规则] 记忆一致性维护规范", "reference"),
 }
 
 SUMMARY_PROMPT_FILE = os.path.join(REFERENCES, "summary-prompt.md")
