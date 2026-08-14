@@ -1,9 +1,8 @@
-# Harness 世界书条目（可直接粘贴）
-
+# Harness 世界书条目（可直接粘贴）— 扳机式 v1.1
 > 以下条目文本用于角色卡世界书。安装者按需复制。
+> **v1.1（2026-08-14）优化说明**：条目已"扳机化"——保留强制指令与索引引用，移除详细清单（明细按需查询 references/hooks-registry.md）。收益：每次会话注入 token 大幅降低，约束力保持 L2（常驻注入"必须执行"指令仍在）。
 
 ## 条目1：系统钩子（常驻激活）
-
 ```markdown
 [Harness] 系统钩子（常驻）
 ━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -12,45 +11,63 @@
 3. 执行：按 [Harness] HooksRegistry — 10事件注册表 逐项检查
 ```
 
-## 条目2：SessionStart Hook（常驻激活）
-
+## 条目2-9：8 个 Hook 扳机式条目（常驻激活，按需复制）
 ```markdown
-## SessionStart Hook — 自动触发
-
-每次新会话首次回复前，必须执行:
-1. **铁律查询**: query_memory("[铁律] 强制执行清单")（引用不带版本号）
-2. **精选Agent**: 查询所有记忆(仅标题) → 精选≤5条 → 注入上下文
-3. **项目激活**: 如有 active_project → 查询项目最新快照
-4. **用户偏好**: query_memory("[用户] 偏好") → 注入
-5. **Harness状态**: 确认 [Harness] Kizuna 架构条目可访问
-→ 详见: [Harness] HooksRegistry — 10事件注册表
+## SessionStart Hook — 新会话首答前必须执行:
+1. 查铁律: query_memory("[铁律] 强制执行清单")
+2. 查项目快照+用户偏好: 有 active_project 查快照；query_memory("[用户] 偏好")
+3. 精选记忆≤5条注入
+→ 完整检查清单: [Harness] HooksRegistry — 10事件注册表
+```
+```markdown
+## PreToolUse Hook — 每次工具调用前必须执行:
+1. 授权检查(破坏性操作先确认) + 路径校验(平台临时目录) + 危险命令检查
+2. 确定性验证: 写/删文件、Shell、推送前必须运行确定性验证器
+→ 完整清单: [Harness] HooksRegistry + DeterministicVerifier
+```
+```markdown
+## Stop Hook — 回复前必须执行:
+1. 反幻觉自查(引用是否真实存在)
+2. 重要任务后自我批判(三反思)
+3. Token简报(>60%提醒) + 任务完整性核查(待办落库)
+→ 完整清单: [Harness] HooksRegistry — 10事件注册表
+```
+```markdown
+## PermissionRequest Hook — 敏感操作前:
+1. 展示完整待操作清单
+2. 分级: 自由操作→approve / 需确认→清单 / 高风险→ask_user
+3. 意图匹配检查
+→ 详见: [Harness] HooksRegistry + PermissionManager
+```
+```markdown
+## UserPromptSubmit Hook — 用户消息时:
+1. 模糊指代澄清(这个/那个/它 → 主动确认)
+2. 意图提取
+3. 精选Agent选≤5条记忆
+→ 详见: [Harness] HooksRegistry
+```
+```markdown
+## PostToolUseFailure Hook — 工具失败时:
+1. 捕获上下文(错误+操作+输入输出)
+2. 自进化分析(判断新旧模式)
+3. 新模式→写入[反馈]型记忆；连续3次同操作失败→停止建议回退
+→ 详见: [Harness] HooksRegistry + AntiRegression
+```
+```markdown
+## PostToolUse Hook — 工具成功后:
+1. 产出验证+副作用检查
+2. 🔴 Harness自修改检测(链接完整性)→不一致修正或标记[待同步]
+3. 重要产出→项目快照
+→ 详见: [Harness] HooksRegistry + AntiRegression
+```
+```markdown
+## PreMemoryWrite Hook — 写记忆前:
+1. 自动分类(标题前缀→文件夹映射)
+2. 去重检查(已有→更新而非新建)
+→ 详见: MemoryTaxonomy
 ```
 
-## 条目3：PreToolUse Hook（常驻激活）
-
-```markdown
-## PreToolUse Hook — 自动触发 (含确定性验证)
-
-每次工具调用前，必须执行:
-1. **授权检查**: 涉及用户数据的破坏性操作必须确认
-2. **路径校验**: 文件写入检查路径（平台临时目录）
-3. **危险操作**: Bash命令检查、文件删除确认
-4. **铁律匹配**: 检查是否有针对当前操作的 ironlaw 规则
-5. **意图对齐**: 操作是否符合用户明确表达的意图？
-```
-
-## 条目4：Stop Hook（常驻激活）
-
-```markdown
-## Stop Hook — 回复前自动触发
-
-每次回复用户前，必须执行:
-1. **反幻觉自查**: 引用的文件/路径/功能是否真实存在？
-2. **自我批判**: 做对了什么/做错了什么/下次改进
-3. **Token简报**: 估算剩余上下文，>60%时提醒
-4. **挫败检测**: 检查用户上一条消息是否含挫败信号 → 调整语气
-5. **Harness健康**: 当前Hook是否正常触发？记忆是否可达？
-```
-
+> 说明：Notification Hook（子Agent完成轮询）按需启用（非必须常驻）。
 ---
-v1.0 | 社区版
+v1.1 | 2026-08-14 | 扳机化优化：8 条目压缩为强制指令+索引引用（省 token，保 L2 强制力）| 社区版
+v1.0 | 2026-08-01 | 全文清单版 | 社区版
