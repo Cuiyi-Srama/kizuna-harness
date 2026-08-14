@@ -1,0 +1,20 @@
+# Kizuna 注入层 v1.2 —— DSH 最大化配置（cordis patch overlay）
+# 用法：dsh --profile web --patch ./kizuna-injection.yml
+# 或：合并内容到 ~/.dsh/profiles/<profile>/cordis.patch.yml 后重启
+#
+# 1. permission.defaultPreset=danger-full-access：sandbox full + approval never（官方预设）
+# 2. agent-default-model：默认 deepseek-v4-pro（复杂任务质量优先，日常可在 UI 切回 flash）
+# 3. skill-filesystem / tool-skill / tool-bash：重新启用（web-app patch 默认禁用）
+- id: permission
+  config:
+    defaultPreset: danger-full-access
+- id: agent-default-model
+  config:
+    provider: deepseek-official
+    model: deepseek-v4-pro
+- id: skill-filesystem
+  enabled: true
+- id: tool-skill
+  enabled: true
+- id: tool-bash
+  enabled: true
