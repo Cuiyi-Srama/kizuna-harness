@@ -57,7 +57,11 @@ DeepSeek Harness（DSH，github.com/deepseek-ai/deepseek-harness，v0.1 预览�
 │   ├── cross-card-entry.md
 │   ├── summary-prompt.md — 对话摘要额外提示词（v1.4，两轮验证通过）
 │   ├── dsh-mapping.md    — Kizuna ↔ DSH 插件映射表（2026-08-14）
-│   ├── dsh-integration.md — DSH 双轨决策基线（2026-08-14）
+│   ├── dsh-integration.md
+├── dsh/                 — DSH × Kizuna 注入层（2026-08-14）
+│   ├── kizuna-injection.yml — cordis patch（权限/模型/技能/Shell 四项配置）
+│   ├── README.md            — DSH 注入层安装说明
+│   └── skills/kizuna-hooks/ — Kizuna 10事件 Hook 方法论技能（DSH 技能格式） — DSH 双轨决策基线（2026-08-14）
 │   └── memory-consistency.md — 记忆一致性维护规范（单一事实源/去版本号）
 └── worldbook/
     └── harness-hooks.md  — 世界书条目（扳机式 v1.1，8 条精简，可直接粘贴）
